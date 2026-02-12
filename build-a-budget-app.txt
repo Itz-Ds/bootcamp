@@ -1,0 +1,123 @@
+** start of main.py **
+
+class Category:
+    def __init__(self, name):
+        self.name = name
+        self.ledger = []
+        self.balance = 0
+
+    def deposit(self, amount, description=''):
+        self.balance += amount
+        self.ledger.append({'amount': amount, 'description': description})
+        
+
+    def withdraw(self, amount,description=''):
+        
+        if self.check_funds(amount):
+            self.ledger.append({'amount': -amount, 'description': description})
+            self.balance -= amount
+            return True
+        else:
+            return False
+
+    def get_balance(self):
+        return self.balance
+    
+    def transfer(self,amount,category,description=''):
+        if self.check_funds(amount):
+            self.withdraw(amount, f'Transfer to {category.name}')
+            category.deposit(amount, f'Transfer from {self.name}')
+            return True
+        return False
+    
+    def check_funds(self, amount):
+        if self.balance>=amount:
+            return True
+        return False
+
+    def __str__(self):
+        total_width = 30
+        output = f"{self.name:*^{total_width}}\n"
+
+        for item in self.ledger:
+            amount = item['amount']
+            description = item['description'][:23]
+            output += f"{description:<23}{amount:>7.2f}\n"
+
+        output += f"Total: {self.balance:.2f}"
+        return output
+
+def create_spend_chart(categories):
+    total_spent = []
+    
+    for category in categories:
+        category_spent = 0
+        for ledger in category.ledger:
+            if ledger['amount'] <0:
+                category_spent += -ledger['amount']
+        total_spent.append(category_spent)
+    
+    overall_total = sum(total_spent)
+    percentages = []
+    for p in total_spent:
+        gategory_percentage = (p/overall_total)*100
+        round_off = int((gategory_percentage//10)*10)
+        percentages.append(round_off)
+
+    chart = 'Percentage spent by category\n'
+    for row in range(100,-1,-10):
+        chart += f'{row:>3}| '
+        for percentage in percentages:
+            if percentage >= row:
+                chart += 'o  '
+            else:
+                chart += '   '
+        chart += '\n'
+    
+    line_count = 3 * len(categories) + 1
+    line = "    "+ line_count*'-' + "\n"
+    chart += line
+
+    category_length = []
+    for category in categories:
+        category_length.append(len(category.name))
+    maximum_length = max(category_length)
+
+    for index in range(0,maximum_length):
+        name_line='     '
+        for category in categories:
+            if index < len(category.name):
+                name_line+=f'{category.name[index]}  '
+            else:
+                name_line+='   '
+        name_line+='\n'
+        chart+=name_line
+    stripped_chart = chart.rstrip('\n')
+    return stripped_chart
+
+food = Category('Food')
+food.deposit(1000, 'deposit')
+food.withdraw(10.15, 'groceries')
+food.withdraw(15.89, 'restaurant and more food for dessert')
+food.withdraw(100)
+
+clothing = Category('Clothing')
+food.transfer(50, clothing)
+clothing.deposit(500,'Deposit')
+clothing.withdraw(27.89,'Birthday')
+clothing.withdraw(69.99,'Cosplay')
+
+gaming = Category('Gaming')
+gaming.deposit(999.99,'Yearly Gift')
+gaming.withdraw(79.99,'PsPlus Subs')
+gaming.withdraw(49.99,'God of war disc')
+
+print(food)
+print(clothing)
+print(gaming)
+
+categories=[food, clothing,gaming]
+print(create_spend_chart(categories))
+
+** end of main.py **
+
